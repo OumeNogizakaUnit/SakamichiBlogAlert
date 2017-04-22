@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getRequest("select id,auth,title,datestr from entry order by desc limit 100");
+        getRequest("SELECT id,auth,title,datestr,url FROM entry ORDER BY date DESC LIMIT 100");
         View.OnClickListener searchClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
