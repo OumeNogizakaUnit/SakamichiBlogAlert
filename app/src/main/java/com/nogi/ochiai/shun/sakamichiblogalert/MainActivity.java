@@ -112,9 +112,10 @@ public class MainActivity extends AppCompatActivity {
                     cardLinear.removeAllViews();
 
                     for(int i = 0; i < json.length(); i++) {
-                        JSONObject item = json.getJSONObject(i);
+                        final JSONObject item = json.getJSONObject(i);
 
                         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.card_layout, null);
+                        CardView cardView = (CardView)linearLayout.findViewById(R.id.card_item);
                         TextView card_title = (TextView)linearLayout.findViewById(R.id.card_item_title);
                         TextView card_auth = (TextView)linearLayout.findViewById(R.id.card_item_auth);
                         TextView card_datestr = (TextView)linearLayout.findViewById(R.id.card_item_datestr);
@@ -124,6 +125,17 @@ public class MainActivity extends AppCompatActivity {
                         card_title.setText(item.getString("title"));
                         card_auth.setText(item.getString("auth"));
                         card_datestr.setText(item.getString("datestr"));
+                        cardView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getString("url")));
+                                    startActivityForResult(intent, 0);
+                                }catch (JSONException e) {
+                                    e.getStackTrace();
+                                }
+                            }
+                        });
 
                         cardLinear.addView(linearLayout,i);
                     }
