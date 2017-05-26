@@ -1,0 +1,9 @@
+diff a/app/src/main/java/com/nogi/ochiai/shun/sakamichiblogalert/MainActivity.java b/app/src/main/java/com/nogi/ochiai/shun/sakamichiblogalert/MainActivity.java	(rejected hunks)
+@@ -112,7 +112,6 @@
+                     cardLinear.removeAllViews();
+ 
+                     for(int i = 0; i < json.length(); i++) {
+-                        JSONObject item = json.getJSONObject(i);
+                         final JSONObject item = json.getJSONObject(i);
+ 
+                         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.card_layout, null);
