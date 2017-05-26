@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     LinearLayout cardLinear = (LinearLayout)findViewById(R.id.card_list);
                     cardLinear.removeAllViews();
 
-                    for(int i = 0; i < json.length(); i++) {
+                    for(int i = 0; i < json.length(); i++){
                         final JSONObject item = json.getJSONObject(i);
 
                         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.card_layout, null);
