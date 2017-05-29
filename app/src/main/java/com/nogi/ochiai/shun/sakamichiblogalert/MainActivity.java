@@ -2,6 +2,8 @@ package com.nogi.ochiai.shun.sakamichiblogalert;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -26,11 +28,13 @@ import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -39,12 +43,15 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
+
+    private CountDownLatch latch = new CountDownLatch(1);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getRequest("SELECT id,auth,title,datestr,url,img FROM entry ORDER BY date DESC LIMIT 100");
+        getRequest("SELECT id,auth,title,datestr,url,img FROM entry ORDER BY date DESC LIMIT 30");
         View.OnClickListener searchClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,17 +121,31 @@ public class MainActivity extends AppCompatActivity {
                     for(int i = 0; i < json.length(); i++){
                         final JSONObject item = json.getJSONObject(i);
 
-                        LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.card_layout, null);
+                        LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.card, null);
                         CardView cardView = (CardView)linearLayout.findViewById(R.id.card_item);
-                        TextView card_title = (TextView)linearLayout.findViewById(R.id.card_item_title);
-                        TextView card_auth = (TextView)linearLayout.findViewById(R.id.card_item_auth);
-                        TextView card_datestr = (TextView)linearLayout.findViewById(R.id.card_item_datestr);
+                        TextView card_title = (TextView)linearLayout.findViewById(R.id.TitleInCard);
+                        TextView card_auth = (TextView)linearLayout.findViewById(R.id.AuthInCard);
+                        TextView card_datestr = (TextView)linearLayout.findViewById(R.id.DateStringInCard);
                         card_title.setTag(i);
                         card_auth.setTag(i);
                         card_datestr.setTag(i);
                         card_title.setText(item.getString("title"));
                         card_auth.setText(item.getString("auth"));
                         card_datestr.setText(item.getString("datestr"));
+
+                        //imageを取得
+                        ImageView image = (ImageView) linearLayout.findViewById(R.id.imageView);
+
+                         //画像取得スレッド起動
+                        latch = new CountDownLatch(1);
+                         ImageGetTask task = new ImageGetTask(image);
+                         task.execute(item.getString("img"));
+                         Log.d("getRequest",item.getString("img"));
+                        try {
+                            latch.await();
+                        }catch (InterruptedException e) {
+                            e.getStackTrace();
+                        }
                         cardView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -144,6 +165,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }.execute();
+    }
+
+    class ImageGetTask extends AsyncTask<String,Void,Bitmap> {
+        private ImageView image;
+
+        public ImageGetTask(ImageView _image) {
+            image = _image;
+        }
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            Bitmap image;
+            try {
+                URL imageUrl = new URL(params[0]);
+                InputStream imageIs;
+                imageIs = imageUrl.openStream();
+                image = BitmapFactory.decodeStream(imageIs);
+                return image;
+            } catch (MalformedURLException e) {
+                return null;
+            } catch (IOException e) {
+                return null;
+            }finally {
+                latch.countDown();
+            }
+        }
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            // 取得した画像をImageViewに設定します。
+            image.setImageBitmap(result);
+        }
     }
 
 }
